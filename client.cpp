@@ -1,15 +1,16 @@
-#include "wrappers.h"
-#include <iostream>
-#include <string.h>
-#include <unistd.h> 
 #include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <boost/log/trivial.hpp>
+#include <iostream>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <boost/log/trivial.hpp>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h> 
 
-void StartClient(int const port, char const *server_ip) {
+#include "wrappers.h"
+
+void StartClient(int port, char* server_ip) {
     size_t buffer_size = 512;
     /*create a socket with ipv4 and tcp*/
     BOOST_LOG_TRIVIAL(info) << "Starting client"; 
@@ -54,14 +55,14 @@ int main(int argc, char *argv[]) {
     if (argc < 2) {
         BOOST_LOG_TRIVIAL(warning) << "The name of the environment variable storing the port is not given";
 	} else {
-        char *sport = getenv(argv[1]);
+        char* sport = getenv(argv[1]);
         if (sport == NULL) {
             BOOST_LOG_TRIVIAL(error) << "not found the environment variable " << argv[1];
             return EXIT_FAILURE;
         }
         port = atoi(sport);
     }
-    char const *server_ip = "127.0.0.7"; 
+    const char* server_ip = "127.0.0.7"; 
     StartClient(port, server_ip);
     return EXIT_SUCCESS;
 }
