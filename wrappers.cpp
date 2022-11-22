@@ -1,12 +1,13 @@
-#include "wrappers.h"
-#include <sys/socket.h>
-#include <cstdlib>
-#include <string.h>
-#include <iostream>
-#include <unistd.h>
-#include <malloc.h>
 #include <arpa/inet.h>
 #include <boost/log/trivial.hpp>
+#include <cstdlib>
+#include <iostream>
+#include <malloc.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+#include "wrappers.h"
 
 int Socket(int domain, int type, int protocol) {
     int res = socket(domain, type, protocol);
@@ -17,7 +18,7 @@ int Socket(int domain, int type, int protocol) {
     return res;
 }
 
-void Bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+void Bind(int sockfd, struct sockaddr *addr, socklen_t addrlen) {
     int res = bind(sockfd, addr, addrlen);
     if (res == -1) {
         BOOST_LOG_TRIVIAL(error) << "Socket binding failed";
@@ -42,7 +43,7 @@ int Accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
     return res;
 }
 
-int Connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+int Connect(int sockfd, struct sockaddr *addr, socklen_t addrlen) {
     int res = connect(sockfd, addr, addrlen);
     if (res == -1) {
         BOOST_LOG_TRIVIAL(error) << "Connection failed";
@@ -51,7 +52,7 @@ int Connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
     return res;
 }
 
-void Inet_pton(int af, const char *src, void *dst) {
+void Inet_pton(int af, const char* src, void *dst) {
     int res = inet_pton(af, src, dst);
     if (res == -1) {
         BOOST_LOG_TRIVIAL(error) << src << " does not contain a character "
@@ -65,7 +66,7 @@ void Inet_pton(int af, const char *src, void *dst) {
     }
 }
 
-int Read(int fd, void *buf, size_t count) {
+int Read(int fd, void* buf, size_t count) {
     /*attempts to read up to count bytes from file 
     descriptor fd into the buffer starting at buf*/
     memset(buf, 0, count);
@@ -81,7 +82,7 @@ int Read(int fd, void *buf, size_t count) {
     return 1;
 }
 
-void Write(int fd, const void *buf, size_t count) {
+void Write(int fd, const void* buf, size_t count) {
     ssize_t res = write(fd, buf, count + 1);
     if (res == -1) {
         BOOST_LOG_TRIVIAL(error) << "Writing failed";
