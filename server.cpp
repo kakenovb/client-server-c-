@@ -1,18 +1,19 @@
-#include "wrappers.h"
+#include <arpa/inet.h>
+#include <boost/log/trivial.hpp>
 #include <cstdlib>
 #include <iostream>
+#include <netinet/in.h>
+#include <netdb.h>
 #include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
 #include <thread> 
-#include <boost/log/trivial.hpp>
+#include <unistd.h>
 #include <vector>
 
-void StartCommunication(int const client_fd, char *buf, size_t const buffer_size, sockaddr_in client_addr) {
+#include "wrappers.h"
+
+void StartCommunication(int client_fd, char *buf, size_t buffer_size, sockaddr_in client_addr) {
     while (true) {
         if (!Read(client_fd, buf, buffer_size)) break; 
         if (strcmp("STOP", buf) == 0) {
@@ -24,7 +25,7 @@ void StartCommunication(int const client_fd, char *buf, size_t const buffer_size
     }
 }
 
-void StartLogging(int const client_fd, char *buf, size_t const buffer_size, sockaddr_in client_addr) {
+void StartLogging(int client_fd, char *buf, size_t buffer_size, sockaddr_in client_addr) {
     while (true) {
         if (!Read(client_fd, buf, buffer_size)) break; 
         if (strcmp("STOP", buf) == 0) {
@@ -36,8 +37,7 @@ void StartLogging(int const client_fd, char *buf, size_t const buffer_size, sock
     }
 }
 
-void HandleClient(int const client_fd, sockaddr_in client_addr) {
-//void HandleClient(int const client_fd) {
+void HandleClient(int client_fd, sockaddr_in client_addr) {
     size_t buffer_size = 512; 
     char buf[buffer_size];
     Read(client_fd, buf, buffer_size); 
@@ -55,8 +55,8 @@ void HandleClient(int const client_fd, sockaddr_in client_addr) {
     close(client_fd);
 }
 
-void StartServer(unsigned short const port, char const* server_ip) {
-    size_t const queue_len = 5; 
+void StartServer(unsigned short port, const char* server_ip) {
+    size_t queue_len = 5; 
     BOOST_LOG_TRIVIAL(info) << "Starting server [PORT=" << port << " IP=" << server_ip << "]"; 
     /*create a listening socket*/
     int server_fd = Socket(AF_INET, SOCK_STREAM, 0);
@@ -76,13 +76,10 @@ void StartServer(unsigned short const port, char const* server_ip) {
     Listen(server_fd, queue_len);
     std::vector<std::thread> clients;
     sockaddr_in client_addr;
-    bool run = true;
-    while (run) {
+    while (true) {
         socklen_t addr_len = sizeof(client_addr);
         /*wait for a connection and accept it*/
         int client_fd = Accept(server_fd, (struct sockaddr*)&client_addr, &addr_len);
-
-        //TODO hangle each client
         clients.emplace_back([client_fd, client_addr]() {
             HandleClient(client_fd, client_addr);
         });
@@ -97,7 +94,7 @@ void StartServer(unsigned short const port, char const* server_ip) {
 
 int main() {
     unsigned short port = 9876;
-    char const* server_ip = "127.0.0.7"; 
+    const char* server_ip = "127.0.0.7"; 
     StartServer(port, server_ip);
     return EXIT_SUCCESS;
 }
